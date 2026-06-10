@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { assertReadOnlyPermissions, buildClientCredentialsTokenRequest, buildInstallUrl } from "./oauth";
+import { assertReadOnlyPermissions, buildClientCredentialsTokenRequest, buildInstallUrl, buildTokenInfoRequest } from "./oauth";
 
 describe("Wix OAuth helpers", () => {
   it("rejects write-like permissions", () => {
@@ -26,5 +26,15 @@ describe("Wix OAuth helpers", () => {
     expect(request.url).toBe("https://www.wixapis.com/oauth2/token");
     expect(request.init.method).toBe("POST");
     expect(String(request.init.body)).toContain('"grant_type":"client_credentials"');
+    expect(String(request.init.body)).toContain('"instanceId":"instance"');
+    expect(String(request.init.body)).not.toContain("instance_id");
+  });
+
+  it("builds a token-info request for signed iframe instance data", () => {
+    const request = buildTokenInfoRequest("signed-instance-token");
+
+    expect(request.url).toBe("https://www.wixapis.com/oauth2/token-info");
+    expect(request.init.method).toBe("POST");
+    expect(JSON.parse(String(request.init.body))).toEqual({ token: "signed-instance-token" });
   });
 });

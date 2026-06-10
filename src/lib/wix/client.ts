@@ -1,6 +1,6 @@
 import { reconcileOrders } from "@/lib/sales-tax/reconcile";
 import type { ReconciliationReport, WixOrderLike, WixOrderTransactionsLike } from "@/lib/sales-tax/types";
-import { buildClientCredentialsTokenRequest, type WixTokenResponse } from "./oauth";
+import { buildClientCredentialsTokenRequest, buildTokenInfoRequest, type WixTokenInfoResponse, type WixTokenResponse } from "./oauth";
 
 export const WIX_ORDERS_SEARCH_URL = "https://www.wixapis.com/ecom/v1/orders/search";
 export const WIX_ORDER_TRANSACTIONS_URL = "https://www.wixapis.com/ecom/v1/payments/orders";
@@ -20,6 +20,22 @@ export async function fetchWixAccessToken(input: {
   }
 
   return token.access_token;
+}
+
+export async function fetchWixInstanceId(input: {
+  instanceToken: string;
+  fetcher?: typeof fetch;
+}): Promise<string> {
+  const request = buildTokenInfoRequest(input.instanceToken);
+  const response = await (input.fetcher ?? fetch)(request.url, request.init);
+  const tokenInfo = (await response.json()) as WixTokenInfoResponse;
+  const instanceId = tokenInfo.instanceId ?? tokenInfo.appInstanceId;
+
+  if (!response.ok || !instanceId) {
+    throw new Error("Unable to identify Wix app instance");
+  }
+
+  return instanceId;
 }
 
 export async function fetchWixSalesTaxReport(input: {

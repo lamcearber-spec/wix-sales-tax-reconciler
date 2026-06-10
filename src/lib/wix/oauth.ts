@@ -1,5 +1,6 @@
 export const WIX_INSTALL_URL = "https://www.wix.com/installer/install";
 export const WIX_TOKEN_URL = "https://www.wixapis.com/oauth2/token";
+export const WIX_TOKEN_INFO_URL = "https://www.wixapis.com/oauth2/token-info";
 
 export const REQUIRED_WIX_PERMISSIONS = ["Read Orders", "Read Stores"] as const;
 
@@ -8,6 +9,11 @@ export type WixTokenResponse = {
   refresh_token?: string;
   expires_in?: number;
   token_type?: string;
+};
+
+export type WixTokenInfoResponse = {
+  instanceId?: string;
+  appInstanceId?: string;
 };
 
 export function assertReadOnlyPermissions(permissions: readonly string[]): void {
@@ -48,7 +54,22 @@ export function buildClientCredentialsTokenRequest(input: {
         grant_type: "client_credentials",
         client_id: input.appId,
         client_secret: input.appSecret,
-        instance_id: input.instanceId
+        instanceId: input.instanceId
+      })
+    }
+  };
+}
+
+export function buildTokenInfoRequest(instanceToken: string): { url: string; init: RequestInit } {
+  return {
+    url: WIX_TOKEN_INFO_URL,
+    init: {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        token: instanceToken
       })
     }
   };
