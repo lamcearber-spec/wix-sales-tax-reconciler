@@ -1,0 +1,8 @@
+.env*
+!.env.example
+.next
+.vercel
+node_modules
+tsconfig.tsbuildinfo
+.dev-server.*
+coverage
